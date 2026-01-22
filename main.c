@@ -1,12 +1,19 @@
 #include "raylib.h"
+#include <stdio.h>
 
 //------------------------------------------------------------------------------------------
 // Types and Structures Definition
 //------------------------------------------------------------------------------------------
 typedef enum GameScreen { LOGO = 0, TITLE, GAMEPLAY, ENDING } GameScreen;
 
-#define SCREEN_WIDTH 800
-#define SCREEN_HEIGHT 450
+#define SCREEN_WIDTH 1600
+#define SCREEN_HEIGHT 900
+#define TILE_SRC 16
+#define TILE_DST 48
+
+static Rectangle tileSrc(int col, int row) {
+  return (Rectangle){col * TILE_SRC, row * TILE_SRC, TILE_SRC, TILE_SRC};
+}
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -22,6 +29,12 @@ int main(void) {
 
   // TODO: Initialize all required variables and load all required data here!
   Rectangle player = {400, 280, 40, 40};
+  Texture2D dungeon = LoadTexture("dungeon_sheet.png");
+  SetTextureFilter(dungeon, TEXTURE_FILTER_POINT);
+  // DEBUG
+  const int cols = dungeon.width / TILE_SRC;
+  const int rows = dungeon.height / TILE_SRC;
+  static int tileIndex = 190;
 
   Camera2D camera = {0};
   camera.target = (Vector2){player.x + 20.0f, player.y + 20.0f};
@@ -82,12 +95,16 @@ int main(void) {
       // TODO: Draw GAMEPLAY screen here!
       BeginMode2D(camera);
 
-      DrawRectangle(-6000, 320, 13000, 8000, DARKGRAY);
-      DrawRectangle(600, 320, 50, 50, GREEN);
+      Vector2 worldPos = (Vector2){600, 320};
 
-      DrawRectangleRec(player, RED);
+      DrawRectanglePro((Rectangle){worldPos.x, worldPos.y, 100, 100},
+                       (Vector2){50, 50}, 0.0f, GREEN);
+
+      Rectangle src = tileSrc(tileIndex % cols, tileIndex / cols);
+      DrawTexturePro(dungeon, src, player, (Vector2){0.0f, 0.0f}, 0.0f, WHITE);
 
       EndMode2D();
+
     } break;
     case ENDING: {
       // TODO: Draw ENDING screen here!
@@ -104,6 +121,7 @@ int main(void) {
   //--------------------------------------------------------------------------------------
 
   // TODO: Unload all loaded data (textures, fonts, audio) here!
+  UnloadTexture(dungeon);
 
   CloseWindow(); // Close window and OpenGL context
   //--------------------------------------------------------------------------------------
